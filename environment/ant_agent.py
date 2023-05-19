@@ -51,6 +51,9 @@ class AntAgent(Entity):
         elif action == ActionType.COLLECT:
             self._environment.collect_action(self)
 
+    def compute_is_truncated(self) -> bool:
+        return False
+
     def collect_food(self, number_food: int):
         self._number_foods_collected_timestep += number_food
         self._number_foods_collected_total += number_food

@@ -1,10 +1,11 @@
 import random
-from typing import Dict, Tuple
+from typing import Dict, Tuple, List, Optional
 import numpy
 
 import gym
 from ray.rllib import MultiAgentEnv
 from gym import Space
+from ray.rllib.utils.typing import MultiAgentDict
 
 from environment.environment_global_include import ActionType, EntityType
 from environment.entity import Entity
@@ -23,7 +24,7 @@ class AntColonyEnvironment(MultiAgentEnv):
         self.max_step: int = environment_configuration['max_step']
         self.graphic_interface_configuration: Dict = environment_configuration['graphic_interface_configuration']
         self.graphic_interface: GraphicInterface = None
-        self.map: list[list[list[Entity]]] = None
+        self.map: List[List[List[Entity]]] = None
 
         self._spaces_in_preferred_format: bool = True
         self._obs_space_in_preferred_format: bool = True
@@ -40,17 +41,19 @@ class AntColonyEnvironment(MultiAgentEnv):
         self.observations_dictionary: Dict[str, Space] = None
         self.rewards_dictionary: Dict[str, float] = None
         self.is_done_dictionary: Dict[str, bool] = None
+        self.is_truncated_dictionary: Dict[str, bool] = None
         self.agents_information_dictionary: Dict[str, Dict[str, str]] = None
 
-    def reset(self, ) -> Dict[str, Space]:
-        self.action_space = gym.spaces.Dict()
-        self.observation_space = gym.spaces.Dict()
+    def reset(self, *, seed: Optional[int] = None, options: Optional[dict] = None,) -> Tuple[Dict[str, Space], Dict[str, Dict[str, str]]]:
+        super().reset(seed=seed)
+        self.action_space: gym.spaces.Dict() = {}
+        self.observation_space: gym.spaces.Dict() = {}
 
         self.current_step = 0
         self.next_agent_number_id = 0
         self.next_food_number_id = 0
         self.agent_ids = set()
-        self.agents_list: list[AntAgent] = []
+        self.agents_list: List[AntAgent] = []
         self.agents_dictionary = {}
         self.entities_position_dictionary = {}
         self.clear_information_dictionaries()
@@ -62,9 +65,9 @@ class AntColonyEnvironment(MultiAgentEnv):
         for _ in range(self.number_foods):
             self.add_food()
 
-        return self.observations_dictionary
+        return self.observations_dictionary, self.agents_information_dictionary
 
-    def step(self, action_dictionary: Dict) -> (Dict[str, Space], Dict[str, float], Dict[str, bool], Dict[str, Dict[str, str]]):
+    def step(self, action_dictionary: Dict) -> Tuple[Dict[str, Space], Dict[str, float], Dict[str, bool], Dict[str, bool], Dict[str, Dict[str, str]]]:
         self.clear_information_dictionaries()
         self.current_step += 1
 
@@ -75,8 +78,9 @@ class AntColonyEnvironment(MultiAgentEnv):
             self.update_information_dictionaries(agent_id)
 
         self.compute_simulation_is_done()
+        self.compute_simulation_is_truncated()
 
-        return self.observations_dictionary, self.rewards_dictionary, self.is_done_dictionary, self.agents_information_dictionary
+        return self.observations_dictionary, self.rewards_dictionary, self.is_done_dictionary, self.is_truncated_dictionary, self.agents_information_dictionary
 
     def render(self, mode="rgb"):
         if self.graphic_interface is None:
@@ -88,13 +92,15 @@ class AntColonyEnvironment(MultiAgentEnv):
         self.observations_dictionary = {}
         self.rewards_dictionary = {}
         self.is_done_dictionary = {}
+        self.is_truncated_dictionary = {}
         self.agents_information_dictionary = {}
 
     def update_information_dictionaries(self, agent_id: str):
-        agent = self.agents_dictionary[agent_id]
+        agent: AntAgent = self.agents_dictionary[agent_id]
         self.observations_dictionary[agent.id] = agent.compute_observation()
         self.rewards_dictionary[agent.id] = agent.compute_reward()
         self.is_done_dictionary[agent.id] = agent.compute_is_done()
+        self.is_truncated_dictionary[agent_id] = agent.compute_is_truncated()
         self.agents_information_dictionary[agent.id] = agent.compute_agent_information()
 
     def compute_simulation_is_done(self):
@@ -111,6 +117,9 @@ class AntColonyEnvironment(MultiAgentEnv):
             simulation_is_done = True
 
         self.is_done_dictionary['__all__'] = simulation_is_done
+
+    def compute_simulation_is_truncated(self):
+        self.is_truncated_dictionary['__all__'] = False
 
     def add_agent(self):
         agent: AntAgent = AntAgent(self, self.ant_agent_configuration, self.next_agent_number_id)
@@ -169,7 +178,7 @@ class AntColonyEnvironment(MultiAgentEnv):
                 value_observation_cell: EntityType = None
 
                 if self.position_is_on_map(observation_cell):
-                    cell_map: list[Entity] = self.map[observation_cell[0]][observation_cell[1]]
+                    cell_map: List[Entity] = self.map[observation_cell[0]][observation_cell[1]]
                     if len(cell_map) > 0:
                         value_observation_cell = cell_map[0].type
                     else:
@@ -188,6 +197,7 @@ class AntColonyEnvironment(MultiAgentEnv):
         agent_position: Tuple[int, int] = self.entities_position_dictionary[ant_agent]
         for entity in self.map[agent_position[0]][agent_position[1]]:
             if entity.type == EntityType.FOOD:
+                entity: Food = entity
                 entity.is_collected(ant_agent)
 
     def move_entity(self, entity: Entity, move: ActionType):
