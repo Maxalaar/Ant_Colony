@@ -82,7 +82,7 @@ class AntColonyEnvironment(MultiAgentEnv):
 
         return self.observations_dictionary, self.rewards_dictionary, self.is_done_dictionary, self.is_truncated_dictionary, self.agents_information_dictionary
 
-    def render(self, mode="rgb"):
+    def render(self):
         if self.graphic_interface is None:
             self.graphic_interface = GraphicInterface(self, self.graphic_interface_configuration)
         self.graphic_interface.update()

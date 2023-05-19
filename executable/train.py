@@ -11,17 +11,17 @@ ppo_configuration: AlgorithmConfig = (
     PPOConfig()
     .framework('torch')
     .environment(
-        'ant_colony_environment',
+        env='ant_colony_environment',
         disable_env_checking=True,
-        render_env=False)
+        render_env=True)
     .multi_agent(policies=policies_dictionary(), policy_mapping_fn=select_random_policy)
     .callbacks(callbacks_class=CustomCallbacks)
-    # .evaluation(
-    #     evaluation_interval=1,
-    #     evaluation_duration=2,
-    #     evaluation_num_workers=1,
-    #     evaluation_config={
-    #         "render_env": False, }, )
+    .evaluation(
+        evaluation_interval=1,
+        evaluation_duration=2,
+        evaluation_num_workers=1,
+        evaluation_config={
+            "render_env": True, }, )
 )
 
 if __name__ == '__main__':
@@ -39,7 +39,7 @@ if __name__ == '__main__':
         trainable='PPO',
         param_space=algorithm_configuration,
         run_config=air.RunConfig(
-            local_dir='./ray_result/',
+            local_dir='../ray_result/',
             stop={'episode_reward_mean': 3.5, 'timesteps_total': 200000, },
             checkpoint_config=air.CheckpointConfig(
                 num_to_keep=3,
