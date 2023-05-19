@@ -1,11 +1,12 @@
 import random
+from typing import Dict, Tuple
 import numpy
 
 import gym
 from ray.rllib import MultiAgentEnv
 from gym import Space
 
-from environment.global_include import ActionType, EntityType
+from environment.environment_global_include import ActionType, EntityType
 from environment.entity import Entity
 from environment.ant_agent import AntAgent
 from environment.food import Food
@@ -13,14 +14,14 @@ from environment.graphic_interface import GraphicInterface
 
 
 class AntColonyEnvironment(MultiAgentEnv):
-    def __init__(self, environment_configuration: dict):
+    def __init__(self, environment_configuration: Dict):
         super().__init__()
-        self.map_size: tuple[int, int] = environment_configuration['map_size']
+        self.map_size: Tuple[int, int] = environment_configuration['map_size']
         self.number_agents: int = environment_configuration['number_agents']
         self.number_foods: int = environment_configuration['number_foods']
         self.ant_agent_configuration = environment_configuration['ant_agent_configuration']
         self.max_step: int = environment_configuration['max_step']
-        self.graphic_interface_configuration: dict = environment_configuration['graphic_interface_configuration']
+        self.graphic_interface_configuration: Dict = environment_configuration['graphic_interface_configuration']
         self.graphic_interface: GraphicInterface = None
         self.map: list[list[list[Entity]]] = None
 
@@ -32,16 +33,16 @@ class AntColonyEnvironment(MultiAgentEnv):
         self.next_agent_number_id: int = None
         self.next_food_number_id: int = None
         self.agent_ids: set = None
-        self.agents_dictionary: dict[str:AntAgent] = None
-        self.entities_position_dictionary: dict[Entity:tuple[int, int]] = None
+        self.agents_dictionary: Dict[str, AntAgent] = None
+        self.entities_position_dictionary: Dict[Entity:Tuple[int, int]] = None
         self.agents_list: list = None
 
-        self.observations_dictionary: dict[str:Space] = None
-        self.rewards_dictionary: dict[str:float] = None
-        self.is_done_dictionary: dict[str:bool] = None
-        self.agents_information_dictionary: dict[str:dict[str:str]] = None
+        self.observations_dictionary: Dict[str, Space] = None
+        self.rewards_dictionary: Dict[str, float] = None
+        self.is_done_dictionary: Dict[str, bool] = None
+        self.agents_information_dictionary: Dict[str, Dict[str, str]] = None
 
-    def reset(self) -> dict[str:Space]:
+    def reset(self, ) -> Dict[str, Space]:
         self.action_space = gym.spaces.Dict()
         self.observation_space = gym.spaces.Dict()
 
@@ -63,7 +64,7 @@ class AntColonyEnvironment(MultiAgentEnv):
 
         return self.observations_dictionary
 
-    def step(self, action_dictionary: dict) -> (dict[str:Space], dict[str:float], dict[str:bool], dict[str:dict[str:str]]):
+    def step(self, action_dictionary: Dict) -> (Dict[str, Space], Dict[str, float], Dict[str, bool], Dict[str, Dict[str, str]]):
         self.clear_information_dictionaries()
         self.current_step += 1
 
@@ -131,19 +132,19 @@ class AntColonyEnvironment(MultiAgentEnv):
     def create_map(self):
         self.map = [[[] for i in range(self.map_size[0])] for j in range(self.map_size[1])]
 
-    def add_entity_map(self, entity: Entity, position: tuple[int, int]):
+    def add_entity_map(self, entity: Entity, position: Tuple[int, int]):
         self.map[position[0]][position[1]].append(entity)
         self.entities_position_dictionary[entity] = position
 
-    def get_random_map_position(self) -> tuple[int, int]:
+    def get_random_map_position(self) -> Tuple[int, int]:
         position_x = random.randint(0, self.map_size[0] - 1)
         position_y = random.randint(0, self.map_size[1] - 1)
         return [position_x, position_y]
 
-    def position_is_on_map(self, position: tuple[int, int]) -> bool:
+    def position_is_on_map(self, position: Tuple[int, int]) -> bool:
         return 0 <= position[0] < self.map_size[0] and 0 <= position[1] < self.map_size[1]
 
-    def reposition_entity(self, entity: Entity, new_entity_position: tuple[int, int]):
+    def reposition_entity(self, entity: Entity, new_entity_position: Tuple[int, int]):
         if self.position_is_on_map(new_entity_position):
             entity_position = self.get_entity_position(entity)
             self.map[entity_position[0]][entity_position[1]].remove(entity)
@@ -152,7 +153,7 @@ class AntColonyEnvironment(MultiAgentEnv):
         else:
             raise TypeError('Attempt to reposition an entity outside the map')
 
-    def get_entity_position(self, entity: Entity) -> tuple[int, int]:
+    def get_entity_position(self, entity: Entity) -> Tuple[int, int]:
         if entity not in self.entities_position_dictionary:
             raise TypeError('Attempt to retrieve the position of an entity that is not in the dictionary')
         return self.entities_position_dictionary[entity]
@@ -184,14 +185,14 @@ class AntColonyEnvironment(MultiAgentEnv):
         return observation
 
     def collect_action(self, ant_agent: AntAgent):
-        agent_position: tuple[int, int] = self.entities_position_dictionary[ant_agent]
+        agent_position: Tuple[int, int] = self.entities_position_dictionary[ant_agent]
         for entity in self.map[agent_position[0]][agent_position[1]]:
             if entity.type == EntityType.FOOD:
                 entity.is_collected(ant_agent)
 
     def move_entity(self, entity: Entity, move: ActionType):
         entity_position = self.get_entity_position(entity)
-        new_entity_position: tuple[int, int] = None
+        new_entity_position: Tuple[int, int] = None
 
         if move == ActionType.MOVE_UP:
             new_entity_position = (entity_position[0], entity_position[1] - 1)

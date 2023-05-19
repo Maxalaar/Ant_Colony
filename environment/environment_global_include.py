@@ -5,7 +5,7 @@ ant_colony_environment_configuration: dict = {
     'map_size': (4, 4),
     'number_agents': 1,
     'number_foods': 1,
-    'max_step': 5,
+    'max_step': 15,
     'ant_agent_configuration': {
         'range_vision': 2,
     },
