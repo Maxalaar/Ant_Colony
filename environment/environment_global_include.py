@@ -26,8 +26,8 @@ class ActionType(Enum):
 
 
 class EntityType(Enum):
-    NIL = 0
-    VOID = 1
-    ANT_AGENT = 2
-    FOOD = 3
+    NIL = -1
+    VOID = 0
+    ANT_AGENT = 1
+    FOOD = 2
 

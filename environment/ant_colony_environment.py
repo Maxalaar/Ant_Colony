@@ -79,6 +79,7 @@ class AntColonyEnvironment(MultiAgentEnv):
 
         self.compute_simulation_is_done()
         self.compute_simulation_is_truncated()
+        # self.render()
 
         return self.observations_dictionary, self.rewards_dictionary, self.is_done_dictionary, self.is_truncated_dictionary, self.agents_information_dictionary
 

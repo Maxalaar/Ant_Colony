@@ -9,7 +9,11 @@ from environment.ant_agent import AntAgent
 def policies_dictionary():
     observation_space = AntAgent.observation_space
     action_space = AntAgent.action_space
-    configuration = {}
+    configuration = {
+        'model': {
+            'custom_model': 'minimal_model',
+        },
+    }
     dictionary = {
         'policy1': PolicySpec(observation_space=observation_space, action_space=action_space, config=configuration),
     }

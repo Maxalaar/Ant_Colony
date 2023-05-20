@@ -1,4 +1,5 @@
 from typing import Dict
+import numpy as np
 
 import gym
 from gym.spaces import Space
@@ -9,9 +10,10 @@ from environment.entity import Entity
 
 
 class AntAgent(Entity):
-    observation_space: Space = gym.spaces.MultiDiscrete([[len(EntityType) for i in range(
-        ant_colony_environment_configuration['ant_agent_configuration']['range_vision'] * 2 + 1)] for j in range(
-        ant_colony_environment_configuration['ant_agent_configuration']['range_vision'] * 2 + 1)])
+    # observation_space: Space = gym.spaces.MultiDiscrete([[len(EntityType) for i in range(
+    #     ant_colony_environment_configuration['ant_agent_configuration']['range_vision'] * 2 + 1)] for j in range(
+    #     ant_colony_environment_configuration['ant_agent_configuration']['range_vision'] * 2 + 1)])
+    observation_space: Space = gym.spaces.Box(low=-len(EntityType), high=len(EntityType), shape=(ant_colony_environment_configuration['ant_agent_configuration']['range_vision'] * 2 + 1, ant_colony_environment_configuration['ant_agent_configuration']['range_vision'] * 2 + 1), dtype=np.float32)
     action_space: Space = gym.spaces.Discrete(len(ActionType))
 
     def __init__(self, environment: MultiAgentEnv, ant_agent_configuration: Dict[str, str], number: int):
