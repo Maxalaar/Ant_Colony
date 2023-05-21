@@ -16,21 +16,22 @@ ppo_configuration: AlgorithmConfig = (
     .environment(
         env='ant_colony_environment',
         disable_env_checking=True,
-        render_env=True)
+        render_env=True,
+    )
     .multi_agent(policies=policies_dictionary(), policy_mapping_fn=select_random_policy)
     .callbacks(callbacks_class=CustomCallbacks)
     .evaluation(
         evaluation_interval=10,
         evaluation_duration=4,
         evaluation_num_workers=1,
-        evaluation_config={
-            "render_env": True, }, )
+        evaluation_config={'render_env': True, },
+    )
 )
 
 if __name__ == '__main__':
     if ray.is_initialized():
         ray.shutdown()
-    ray.init(local_mode=True)
+    ray.init(local_mode=False)
 
     algorithm_configuration: AlgorithmConfig = ppo_configuration
 
@@ -40,10 +41,14 @@ if __name__ == '__main__':
         trainable='PPO',
         param_space=algorithm_configuration,
         run_config=air.RunConfig(
-            name='minimal_model' + '_' + type(algorithm_configuration).__name__ + '_' + datetime.today().strftime('%Y-%m-%d_%Hh-%Mm-%Ss'),
+            name='minimal_no_custom_model_extern_mode' + '_' + type(algorithm_configuration).__name__ + '_' + datetime.today().strftime('%Y-%m-%d_%Hh-%Mm-%Ss'),
             # name='trash',
             local_dir='../ray_result/',
-            stop={'episode_reward_mean': 4, 'timesteps_total': 200000, },
+            stop={
+                'episode_reward_mean': 4,
+                'timesteps_total': 400000,
+                # 'time_total_s': 60 * 15,
+            },
             checkpoint_config=air.CheckpointConfig(
                 num_to_keep=3,
                 checkpoint_score_attribute='episode_reward_mean',
