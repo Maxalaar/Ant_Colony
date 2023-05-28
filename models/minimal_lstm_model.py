@@ -28,18 +28,15 @@ class MinimalLSTMModel(TorchRNN, nn.Module):
         self.fc_size = fc_size
         self.lstm_state_size = lstm_state_size
 
-        # Build the Module from fc + LSTM + 2xfc (action + value outs).
         self.fc1 = nn.Linear(self.obs_size, self.fc_size)
         self.lstm = nn.LSTM(self.fc_size, self.lstm_state_size, batch_first=True)
+
         self.action_branch = nn.Linear(self.lstm_state_size, num_outputs)
         self.value_branch = nn.Linear(self.lstm_state_size, 1)
-        # Holds the current "base" output (before logits layer).
         self._features = None
 
     @override(ModelV2)
     def get_initial_state(self):
-        # TODO: (sven): Get rid of `get_initial_state` once Trajectory
-        #  View API is supported across all of RLlib.
         # Place hidden states on same device as model.
         h = [
             self.fc1.weight.new(1, self.lstm_state_size).zero_().squeeze(0),
@@ -49,7 +46,6 @@ class MinimalLSTMModel(TorchRNN, nn.Module):
 
     @override(ModelV2)
     def value_function(self):
-        assert self._features is not None, "must call forward() first"
         return torch.reshape(self.value_branch(self._features), [-1])
 
     @override(TorchRNN)

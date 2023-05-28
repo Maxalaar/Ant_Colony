@@ -7,7 +7,7 @@ from ray.rllib import MultiAgentEnv
 from gym import Space
 from ray.rllib.utils.typing import MultiAgentDict
 
-from environment.environment_global_include import ActionType, EntityType
+from environment.environment_global_include import BasicActions, EntityType, number_pheromone_layers, ant_range_vision
 from environment.entity import Entity
 from environment.ant_agent import AntAgent
 from environment.food import Food
@@ -21,10 +21,12 @@ class AntColonyEnvironment(MultiAgentEnv):
         self.number_agents: int = environment_configuration['number_agents']
         self.number_foods: int = environment_configuration['number_foods']
         self.ant_agent_configuration = environment_configuration['ant_agent_configuration']
+        self.number_pheromone_layers: int = number_pheromone_layers
         self.max_step: int = environment_configuration['max_step']
         self.graphic_interface_configuration: Dict = environment_configuration['graphic_interface_configuration']
         self.graphic_interface: GraphicInterface = None
         self.map: List[List[List[Entity]]] = None
+        self.pheromone_layers: numpy.ndarray = None
 
         self._spaces_in_preferred_format: bool = True
         self._obs_space_in_preferred_format: bool = True
@@ -44,7 +46,8 @@ class AntColonyEnvironment(MultiAgentEnv):
         self.is_truncated_dictionary: Dict[str, bool] = None
         self.agents_information_dictionary: Dict[str, Dict[str, str]] = None
 
-    def reset(self, *, seed: Optional[int] = None, options: Optional[dict] = None,) -> Tuple[Dict[str, Space], Dict[str, Dict[str, str]]]:
+    def reset(self, *, seed: Optional[int] = None, options: Optional[dict] = None, ) -> Tuple[
+        Dict[str, Space], Dict[str, Dict[str, str]]]:
         super().reset(seed=seed)
         self.action_space: gym.spaces.Dict() = {}
         self.observation_space: gym.spaces.Dict() = {}
@@ -59,6 +62,8 @@ class AntColonyEnvironment(MultiAgentEnv):
         self.clear_information_dictionaries()
 
         self.create_map()
+        self.create_pheromone_layers()
+
         for _ in range(self.number_agents):
             self.add_agent()
 
@@ -67,7 +72,8 @@ class AntColonyEnvironment(MultiAgentEnv):
 
         return self.observations_dictionary, self.agents_information_dictionary
 
-    def step(self, action_dictionary: Dict) -> Tuple[Dict[str, Space], Dict[str, float], Dict[str, bool], Dict[str, bool], Dict[str, Dict[str, str]]]:
+    def step(self, action_dictionary: Dict) -> Tuple[
+        Dict[str, Space], Dict[str, float], Dict[str, bool], Dict[str, bool], Dict[str, Dict[str, str]]]:
         self.clear_information_dictionaries()
         self.current_step += 1
 
@@ -142,6 +148,9 @@ class AntColonyEnvironment(MultiAgentEnv):
     def create_map(self):
         self.map = [[[] for i in range(self.map_size[0])] for j in range(self.map_size[1])]
 
+    def create_pheromone_layers(self):
+        self.pheromone_layers = numpy.zeros((self.map_size[0], self.map_size[1], self.number_pheromone_layers))
+
     def add_entity_map(self, entity: Entity, position: Tuple[int, int]):
         self.map[position[0]][position[1]].append(entity)
         self.entities_position_dictionary[entity] = position
@@ -168,8 +177,8 @@ class AntColonyEnvironment(MultiAgentEnv):
             raise TypeError('Attempt to retrieve the position of an entity that is not in the dictionary')
         return self.entities_position_dictionary[entity]
 
-    def get_observation(self, ant_agent: AntAgent) -> numpy.ndarray:
-        observation = AntAgent.observation_space.sample() * 0
+    def get_entity_observation(self, ant_agent: AntAgent) -> numpy.ndarray:
+        observation = numpy.zeros(shape=(ant_range_vision * 2 + 1, ant_range_vision * 2 + 1))
         range_vision = ant_agent.range_vision
         ant_position = self.get_entity_position(ant_agent)
 
@@ -194,6 +203,22 @@ class AntColonyEnvironment(MultiAgentEnv):
 
         return observation
 
+    def get_pheromone_observation(self, ant_agent: AntAgent) -> numpy.ndarray:
+        observation = numpy.zeros(shape=(ant_range_vision * 2 + 1, ant_range_vision * 2 + 1, self.number_pheromone_layers))
+        range_vision = ant_agent.range_vision
+        ant_position = self.get_entity_position(ant_agent)
+        nil_vector = numpy.ones(shape=(self.number_pheromone_layers,)) * 0
+
+        for i in range(-range_vision, range_vision):
+            for j in range(-range_vision, range_vision):
+                observation_cell = (ant_position[0] + i, ant_position[1] + j)
+                if self.position_is_on_map(observation_cell):
+                    observation[i][j] = self.pheromone_layers[observation_cell[0]][observation_cell[1]]
+                else:
+                    observation[i][j] = nil_vector
+
+        return observation
+
     def collect_action(self, ant_agent: AntAgent):
         agent_position: Tuple[int, int] = self.entities_position_dictionary[ant_agent]
         for entity in self.map[agent_position[0]][agent_position[1]]:
@@ -201,18 +226,22 @@ class AntColonyEnvironment(MultiAgentEnv):
                 entity: Food = entity
                 entity.is_collected(ant_agent)
 
-    def move_entity(self, entity: Entity, move: ActionType):
+    def move_entity(self, entity: Entity, move: BasicActions):
         entity_position = self.get_entity_position(entity)
         new_entity_position: Tuple[int, int] = None
 
-        if move == ActionType.MOVE_UP:
+        if move == BasicActions.MOVE_UP:
             new_entity_position = (entity_position[0], entity_position[1] - 1)
-        if move == ActionType.MOVE_RIGHT:
+        if move == BasicActions.MOVE_RIGHT:
             new_entity_position = (entity_position[0] + 1, entity_position[1])
-        if move == ActionType.MOVE_DOWN:
+        if move == BasicActions.MOVE_DOWN:
             new_entity_position = (entity_position[0], entity_position[1] + 1)
-        if move == ActionType.MOVE_LEFT:
+        if move == BasicActions.MOVE_LEFT:
             new_entity_position = (entity_position[0] - 1, entity_position[1])
 
         if self.position_is_on_map(new_entity_position):
             self.reposition_entity(entity, new_entity_position)
+
+    def apply_pheromones(self, entity: Entity, pheromone_vector: numpy.ndarray):
+        entity_position: Tuple[int, int] = self.get_entity_position(entity)
+        self.pheromone_layers[entity_position[0]][entity_position[1]] += pheromone_vector

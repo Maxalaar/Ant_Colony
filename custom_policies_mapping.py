@@ -10,10 +10,10 @@ def policies_dictionary():
     observation_space = AntAgent.observation_space
     action_space = AntAgent.action_space
     configuration = {
-        # 'model': {
-        #     'custom_model': 'minimal_lstm_model',
-        #     # 'custom_model': 'minimal_model',
-        # },
+        'model': {
+            'custom_model': 'minimal_model',
+            # 'custom_model': 'minimal_lstm_model',
+        },
     }
     dictionary = {
         'policy1': PolicySpec(observation_space=observation_space, action_space=action_space, config=configuration),

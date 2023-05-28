@@ -31,7 +31,7 @@ ppo_configuration: AlgorithmConfig = (
 if __name__ == '__main__':
     if ray.is_initialized():
         ray.shutdown()
-    ray.init(local_mode=False)
+    ray.init(local_mode=True)
 
     algorithm_configuration: AlgorithmConfig = ppo_configuration
 
@@ -41,13 +41,13 @@ if __name__ == '__main__':
         trainable='PPO',
         param_space=algorithm_configuration,
         run_config=air.RunConfig(
-            name='minimal_no_custom_model_extern_mode' + '_' + type(algorithm_configuration).__name__ + '_' + datetime.today().strftime('%Y-%m-%d_%Hh-%Mm-%Ss'),
-            # name='trash',
+            # name= datetime.today().strftime('%Y-%m-%d_%Hh-%Mm-%Ss') + '_' + 'minimal_no_custom_model_extern_mode' + '_' + type(algorithm_configuration).__name__,
+            name='trash',
             local_dir='../ray_result/',
             stop={
                 'episode_reward_mean': 4,
                 'timesteps_total': 400000,
-                # 'time_total_s': 60 * 15,
+                'time_total_s': 60 * 5,
             },
             checkpoint_config=air.CheckpointConfig(
                 num_to_keep=3,
