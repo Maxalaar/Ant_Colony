@@ -11,7 +11,8 @@ def policies_dictionary():
     action_space = AntAgent.action_space
     configuration = {
         'model': {
-            'custom_model': 'minimal_model',
+            # 'custom_model': 'minimal_model',
+            'custom_model': 'full_connected_model',
             # 'custom_model': 'minimal_lstm_model',
         },
     }

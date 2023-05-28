@@ -31,7 +31,7 @@ ppo_configuration: AlgorithmConfig = (
 if __name__ == '__main__':
     if ray.is_initialized():
         ray.shutdown()
-    ray.init(local_mode=True)
+    ray.init(local_mode=False)
 
     algorithm_configuration: AlgorithmConfig = ppo_configuration
 
