@@ -7,6 +7,7 @@ from ray import air, tune
 
 import models.register_models    # Required to register models
 import environment.register_ant_colony_environment  # Required to register environment
+from environment.register_ant_colony_environment import AntColonyEnvironment, ant_colony_environment_basic_configuration
 from custom_callbacks import CustomCallbacks
 from custom_policies_mapping import policies_dictionary, select_random_policy
 
@@ -14,9 +15,10 @@ ppo_configuration: AlgorithmConfig = (
     PPOConfig()
     .framework('torch')
     .environment(
-        env='ant_colony_environment',
+        env=AntColonyEnvironment,
+        env_config=ant_colony_environment_basic_configuration,
         disable_env_checking=True,
-        render_env=True,
+        render_env=False,
     )
     .multi_agent(policies=policies_dictionary(), policy_mapping_fn=select_random_policy)
     .callbacks(callbacks_class=CustomCallbacks)
@@ -24,7 +26,12 @@ ppo_configuration: AlgorithmConfig = (
         evaluation_interval=10,
         evaluation_duration=4,
         evaluation_num_workers=1,
-        evaluation_config={'render_env': True, },
+        evaluation_config={'render_env': False, },
+    )
+    .resources(
+        num_gpus=0,
+        num_cpus_per_worker=1,
+        num_learner_workers=0,
     )
 )
 
@@ -45,9 +52,9 @@ if __name__ == '__main__':
             name='trash',
             local_dir='../ray_result/',
             stop={
-                'episode_reward_mean': 4,
-                'timesteps_total': 400000,
-                'time_total_s': 60 * 5,
+                'episode_reward_mean': 5,
+                'timesteps_total': 1000000,
+                # 'time_total_s': 60 * 40,
             },
             checkpoint_config=air.CheckpointConfig(
                 num_to_keep=3,

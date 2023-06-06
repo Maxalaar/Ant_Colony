@@ -22,7 +22,9 @@ class AntColonyEnvironment(MultiAgentEnv):
         self.number_foods: int = environment_configuration['number_foods']
         self.ant_agent_configuration = environment_configuration['ant_agent_configuration']
         self.number_pheromone_layers: int = number_pheromone_layers
+        self.pheromone_evaporation: float = environment_configuration['pheromone_evaporation']
         self.max_step: int = environment_configuration['max_step']
+        self.render_environment: bool = environment_configuration['graphic_interface_configuration']['render_environment']
         self.graphic_interface_configuration: Dict = environment_configuration['graphic_interface_configuration']
         self.graphic_interface: GraphicInterface = None
         self.map: List[List[List[Entity]]] = None
@@ -77,6 +79,8 @@ class AntColonyEnvironment(MultiAgentEnv):
         self.clear_information_dictionaries()
         self.current_step += 1
 
+        self.pheromone_layers *= (1 - self.pheromone_evaporation)
+
         for agent_id, action in action_dictionary.items():
             self.agents_dictionary[agent_id].compute_action(action)
 
@@ -85,7 +89,9 @@ class AntColonyEnvironment(MultiAgentEnv):
 
         self.compute_simulation_is_done()
         self.compute_simulation_is_truncated()
-        # self.render()
+
+        if self.render_environment:
+            self.render()
 
         return self.observations_dictionary, self.rewards_dictionary, self.is_done_dictionary, self.is_truncated_dictionary, self.agents_information_dictionary
 
