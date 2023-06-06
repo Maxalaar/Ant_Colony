@@ -6,8 +6,8 @@ from ray.rllib.algorithms.ppo import PPOConfig
 from ray import air, tune
 
 import models.register_models    # Required to register models
-import environment.register_ant_colony_environment  # Required to register environment
-from environment.register_ant_colony_environment import AntColonyEnvironment, ant_colony_environment_basic_configuration
+from environment.ant_colony_environment import AntColonyEnvironment
+from environment.configuration import ant_colony_environment_basic_configuration, ant_colony_environment_complex_configuration
 from custom_callbacks import CustomCallbacks
 from custom_policies_mapping import policies_dictionary, select_random_policy
 
@@ -16,7 +16,7 @@ ppo_configuration: AlgorithmConfig = (
     .framework('torch')
     .environment(
         env=AntColonyEnvironment,
-        env_config=ant_colony_environment_basic_configuration,
+        env_config=ant_colony_environment_complex_configuration,
         disable_env_checking=True,
         render_env=False,
     )
@@ -48,13 +48,13 @@ if __name__ == '__main__':
         trainable='PPO',
         param_space=algorithm_configuration,
         run_config=air.RunConfig(
-            # name= datetime.today().strftime('%Y-%m-%d_%Hh-%Mm-%Ss') + '_' + 'minimal_no_custom_model_extern_mode' + '_' + type(algorithm_configuration).__name__,
-            name='trash',
+            name=datetime.today().strftime('%Y-%m-%d_%Hh-%Mm-%Ss') + '_' + 'complex_5agents_25x25_5foods' + '_' + type(algorithm_configuration).__name__,
+            # name='trash',
             local_dir='../ray_result/',
             stop={
-                'episode_reward_mean': 5,
-                'timesteps_total': 1000000,
-                # 'time_total_s': 60 * 40,
+                # 'episode_reward_mean': 5,
+                # 'timesteps_total': 1000000,
+                'time_total_s': 60 * 60 * 3,
             },
             checkpoint_config=air.CheckpointConfig(
                 num_to_keep=3,
