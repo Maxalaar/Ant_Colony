@@ -27,8 +27,10 @@ class AntAgent(Entity):
         self._current_reward: float = 0
         self._current_observation: Space = None
         self._is_done: bool = False
-        self._number_foods_collected_timestep = 0
-        self._number_foods_collected_total = 0
+        self._number_foods_collected_timestep: int = 0
+
+        self.total_number_foods_collected: int = 0
+        self.total_pheromones_deposited: numpy.ndarray = numpy.zeros(shape=(number_pheromone_layers,))
 
     def compute_observation(self) -> Space:
         entity_observation = self._environment.get_entity_observation(self)
@@ -50,7 +52,7 @@ class AntAgent(Entity):
 
     def compute_agent_information(self) -> dict:
         agent_information: dict = {
-            'number_foods_collected_total': self._number_foods_collected_total,
+            'number_foods_collected_total': self.total_number_foods_collected,
         }
         return agent_information
 
@@ -59,6 +61,7 @@ class AntAgent(Entity):
         basic_action: int = action['basic']
 
         # We apply the pheromone ant actions
+        self.total_pheromones_deposited += pheromone_action
         self._environment.apply_pheromones(self, pheromone_action * self.maximum_quantity_pheromone_deposited)
 
         # We apply the basic ant actions
@@ -75,4 +78,4 @@ class AntAgent(Entity):
 
     def collect_food(self, number_food: int):
         self._number_foods_collected_timestep += number_food
-        self._number_foods_collected_total += number_food
+        self.total_number_foods_collected += number_food

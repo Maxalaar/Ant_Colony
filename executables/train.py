@@ -48,8 +48,8 @@ if __name__ == '__main__':
         trainable='PPO',
         param_space=algorithm_configuration,
         run_config=air.RunConfig(
-            name=datetime.today().strftime('%Y-%m-%d_%Hh-%Mm-%Ss') + '_' + 'complex_5agents_25x25_5foods' + '_' + type(algorithm_configuration).__name__,
-            # name='trash',
+            # name=datetime.today().strftime('%Y-%m-%d_%Hh-%Mm-%Ss') + '_' + 'complex_5agents_25x25_5foods_120steps' + '_' + type(algorithm_configuration).__name__,
+            name='trash',
             local_dir='../ray_result/',
             stop={
                 # 'episode_reward_mean': 5,

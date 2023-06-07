@@ -10,7 +10,7 @@ if __name__ == '__main__':
         ray.init(local_mode=True)
 
     # path_checkpoint: str = ''
-    path_checkpoint: str = '/mnt/5fdcbd7a-f9bb-4644-9e14-f139b450c359/Informatique_Workplace/Workplace_PyCharm/Ant_Colony/ray_result/2023-06-06_11h-56m-06s_complex_5agents_25x25_5foods_PPOConfig/PPO_AntColonyEnvironment_5b1d0_00000_0_2023-06-06_11-56-06/checkpoint_000490'
+    path_checkpoint: str = '/mnt/5fdcbd7a-f9bb-4644-9e14-f139b450c359/Informatique_Workplace/Workplace_PyCharm/Ant_Colony/ray_result/2023-06-06_15h-40m-34s_complex_5agents_25x25_5foods_120steps_PPOConfig/PPO_AntColonyEnvironment_b6a63_00000_0_2023-06-06_15-40-34/checkpoint_000344'
     environment_configuration: dict = ant_colony_environment_complex_configuration
     environment_configuration['graphic_interface_configuration']['render_environment'] = True
 

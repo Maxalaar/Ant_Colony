@@ -1,5 +1,3 @@
-from collections import ChainMap
-
 ant_colony_environment_basic_configuration: dict = {
     'map_size': (4, 4),
     'number_agents': 1,
@@ -13,7 +11,7 @@ ant_colony_environment_basic_configuration: dict = {
     'graphic_interface_configuration': {
         'render_environment': False,
         'window_size': (800, 800),
-        'steps_per_second': 3,
+        'steps_per_second': 5,
     },
 }
 
