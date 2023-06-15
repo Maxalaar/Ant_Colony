@@ -5,9 +5,8 @@ from ray.rllib.algorithms.algorithm import AlgorithmConfig, Algorithm
 from ray.rllib.algorithms.ppo import PPOConfig
 from ray import air, tune
 
-import models.register_models    # Required to register models
 from environment.ant_colony_environment import AntColonyEnvironment
-from environment.configuration import ant_colony_environment_basic_configuration, ant_colony_environment_complex_configuration
+from environment.configuration import *
 from custom_callbacks import CustomCallbacks
 from custom_policies_mapping import policies_dictionary, select_random_policy
 
@@ -22,16 +21,20 @@ ppo_configuration: AlgorithmConfig = (
     )
     .multi_agent(policies=policies_dictionary(), policy_mapping_fn=select_random_policy)
     .callbacks(callbacks_class=CustomCallbacks)
+    .resources(
+        num_gpus=0,
+        num_cpus_per_worker=1,
+        num_learner_workers=0,
+    )
+    .rollouts(
+        num_rollout_workers=2,
+        num_envs_per_worker=1,
+    )
     .evaluation(
         evaluation_interval=10,
         evaluation_duration=4,
         evaluation_num_workers=1,
         evaluation_config={'render_env': False, },
-    )
-    .resources(
-        num_gpus=0,
-        num_cpus_per_worker=1,
-        num_learner_workers=0,
     )
 )
 

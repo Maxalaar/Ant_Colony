@@ -12,14 +12,15 @@ torch, nn = try_import_torch()
 
 
 class FullConnectedModel(TorchModelV2, nn.Module):
-    def __init__(self, observation_space, action_space, number_outputs, model_configuration, name):
+    def __init__(self, observation_space, action_space, number_outputs, model_configuration, name, **customized_model_kwargs):
         TorchModelV2.__init__(self, observation_space, action_space, number_outputs, model_configuration, name)
         nn.Module.__init__(self)
 
+        self.model_configuration: dict = customized_model_kwargs
         self.observation_space: Space = AntAgent.observation_space
         self.action_space: Space = AntAgent.action_space
-        self.number_full_connected_layers: int = 5
-        self.size_full_connected_layers: int = 64
+        self.number_full_connected_layers: int = self.model_configuration['number_full_connected_layers']
+        self.size_full_connected_layers: int = self.model_configuration['size_full_connected_layers']
 
         self.observation: numpy.ndarray = None
         self.flatten_observation: numpy.ndarray = None
@@ -69,7 +70,7 @@ class FullConnectedModel(TorchModelV2, nn.Module):
         flatten_observation_projection = self.projection_flatten_fully(self.flatten_observation)
         self.full_connected_activation = self.list_full_connected_layers[0](flatten_observation_projection)
         for i in range(1, len(self.list_full_connected_layers)):
-            self.full_connected_activation = self.list_full_connected_layers[1](self.full_connected_activation)
+            self.full_connected_activation = self.list_full_connected_layers[i](self.full_connected_activation)
 
         basic_action = self.dictionary_actions_layers['basic'](self.full_connected_activation)
         pheromone_action = self.dictionary_actions_layers['pheromone'](self.full_connected_activation)

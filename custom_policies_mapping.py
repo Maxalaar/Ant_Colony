@@ -4,6 +4,8 @@ import gym
 from ray.rllib.policy.policy import PolicySpec
 
 from environment.ant_agent import AntAgent
+from models.full_connected_model import FullConnectedModel
+from models.configuration import *
 
 
 def policies_dictionary():
@@ -12,8 +14,10 @@ def policies_dictionary():
     configuration = {
         'model': {
             # 'custom_model': 'minimal_model',
-            'custom_model': 'full_connected_model',
+            # 'custom_model': 'full_connected_model',
             # 'custom_model': 'minimal_lstm_model',
+            'custom_model': FullConnectedModel,
+            'custom_model_config': full_connected_model_basic_configuration,
         },
     }
     dictionary = {
