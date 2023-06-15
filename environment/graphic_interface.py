@@ -1,14 +1,15 @@
-import pygame
+from typing import Tuple
 import time
-
 import numpy as np
 import matplotlib.pyplot as plt
+import pygame
 from pygame import Color
 
 from ray.rllib import MultiAgentEnv
 
 from environment.environment_global_include import EntityType
 from environment.entity import Entity
+from environment.ant_agent import AntAgent
 
 
 class GraphicInterface:
@@ -23,6 +24,8 @@ class GraphicInterface:
         self._background_color = Color(255, 255, 255, 255)
         self._ant_agent_color: Color = Color(255, 0, 0, 255)
         self._food_color: Color = Color(0, 255, 0, 255)
+        self._field_view_color: Color = Color(0, 0, 255, 50)
+        self._cell_size: tuple(float, float) = None
 
         self._pheromones_average_figure = None
         self._pheromones_average_axis = None
@@ -31,25 +34,51 @@ class GraphicInterface:
     def update(self):
         self.update_entity_map()
         self.update_pheromone_layers()
+        time.sleep(float(1) / float(self._steps_per_second))
 
     def update_entity_map(self):
-        cell_size_x: float = float(self._screen.get_size()[0]) / float(self._environment.map_size[0])
-        cell_size_y: float = float(self._screen.get_size()[1]) / float(self._environment.map_size[1])
-        cell_size: tuple(float, float) = (cell_size_x, cell_size_y)
-
         self._screen.fill(self._background_color)
 
+        self.compute_cell_size()
+        self.display_entities()
+        self.display_field_view()
+
+        pygame.display.flip()
+
+    def compute_cell_size(self):
+        cell_size_x: float = float(self._screen.get_size()[0]) / float(self._environment.map_size[0])
+        cell_size_y: float = float(self._screen.get_size()[1]) / float(self._environment.map_size[1])
+        self._cell_size = (cell_size_x, cell_size_y)
+
+    def display_entities(self):
         for x in range(self._environment.map_size[0]):
             for y in range(self._environment.map_size[1]):
                 if len(self._environment.map[x][y]) > 0:
                     entity: Entity = self._environment.map[x][y][0]
+                    entity_position = self.index_to_position((x, y))
                     if entity.type == EntityType.ANT_AGENT:
-                        pygame.draw.rect(self._screen, self._ant_agent_color, pygame.Rect(x * cell_size[0], y * cell_size[1], cell_size[0], cell_size[1]))
+                        self.draw_rect(size=self._cell_size, position=entity_position, color=self._ant_agent_color)
                     elif entity.type == EntityType.FOOD:
-                        pygame.draw.rect(self._screen, self._food_color, pygame.Rect(x * cell_size[0], y * cell_size[1], cell_size[0], cell_size[1]))
+                        self.draw_rect(size=self._cell_size, position=entity_position, color=self._food_color)
 
-        pygame.display.flip()
-        time.sleep(float(1) / float(self._steps_per_second))
+    def display_field_view(self):
+        for ant_agent in self._environment.agents_list:
+            ant_agent: AntAgent = ant_agent
+            ant_agent_range_vision: int = ant_agent.range_vision
+            ant_agent_position: Tuple[int, int] = self._environment.entities_position_dictionary[ant_agent]
+            for x in range(-ant_agent_range_vision, ant_agent_range_vision + 1):
+                for y in range(-ant_agent_range_vision, ant_agent_range_vision + 1):
+                    coloring_cell_index = (ant_agent_position[0] + x, ant_agent_position[1] + y)
+                    self.draw_rect(size=self._cell_size, position=self.index_to_position(coloring_cell_index), color=self._field_view_color)
+
+    def draw_rect(self, size: Tuple[int, int], position: Tuple[int, int], color: Color):
+        surface = pygame.Surface(size)
+        surface.set_alpha(color.a)
+        surface.fill(color)
+        self._screen.blit(surface, position)
+
+    def index_to_position(self, index: Tuple[int, int]) -> Tuple[int, int]:
+        return index[0] * self._cell_size[0], index[1] * self._cell_size[1]
 
     def update_pheromone_layers(self):
         pheromones_average = np.average(self._environment.pheromone_layers, axis=2)
