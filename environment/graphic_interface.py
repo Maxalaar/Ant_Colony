@@ -7,8 +7,7 @@ from pygame import Color
 
 from ray.rllib import MultiAgentEnv
 
-from environment.environment_global_include import EntityType
-from environment.entity import Entity
+from environment.entity import Entity, EntityType
 from environment.ant_agent import AntAgent
 
 
@@ -64,7 +63,7 @@ class GraphicInterface:
     def display_field_view(self):
         for ant_agent in self._environment.agents_list:
             ant_agent: AntAgent = ant_agent
-            ant_agent_range_vision: int = ant_agent.range_vision
+            ant_agent_range_vision: int = ant_agent.entities_range_vision
             ant_agent_position: Tuple[int, int] = self._environment.entities_position_dictionary[ant_agent]
             for x in range(-ant_agent_range_vision, ant_agent_range_vision + 1):
                 for y in range(-ant_agent_range_vision, ant_agent_range_vision + 1):

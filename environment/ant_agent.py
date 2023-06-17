@@ -1,28 +1,39 @@
 from typing import Dict
+from enum import Enum
 import numpy
 
-
-import gym
-from gym.spaces import Space, Box, Discrete
+import gymnasium
+from gymnasium.spaces import Space, Box, Discrete
 from ray.rllib import MultiAgentEnv
 
-from environment.environment_global_include import BasicActions, EntityType, ant_range_vision, number_pheromone_layers
-from environment.entity import Entity
+from environment.entity import Entity, EntityType
+
+
+class BasicActions(Enum):
+    NOTHING = 0
+    MOVE_UP = 1
+    MOVE_RIGHT = 2
+    MOVE_DOWN = 3
+    MOVE_LEFT = 4
+    COLLECT = 5
 
 
 class AntAgent(Entity):
-    observation_space: Space = gym.spaces.Dict({
-        'entity': Box(low=-len(EntityType), high=len(EntityType), shape=(ant_range_vision * 2 + 1, ant_range_vision * 2 + 1)),
-        'pheromone': Box(low=0, high=numpy.inf, shape=(ant_range_vision * 2 + 1, ant_range_vision * 2 + 1, number_pheromone_layers)),
-    })
-    action_space: Space = gym.spaces.Dict({
-        'basic': Discrete(len(BasicActions)),
-        'pheromone': Box(low=0, high=1, shape=(number_pheromone_layers,)),
-    })
-
     def __init__(self, environment: MultiAgentEnv, ant_agent_configuration: Dict[str, str], number: int):
         super().__init__(id='ant_agent_' + str(number), environment=environment, type=EntityType.ANT_AGENT, can_stacked=False)
-        self.range_vision: int = ant_range_vision
+        self.entities_range_vision: int = ant_agent_configuration['entities_range_vision']
+        self.pheromones_range_vision: int = ant_agent_configuration['pheromones_range_vision']
+        self.number_pheromone_layers: int = ant_agent_configuration['number_pheromone_layers']
+
+        self.observation_space: Space = gymnasium.spaces.Dict({
+            'entity': Box(low=-len(EntityType), high=len(EntityType), shape=(self.entities_range_vision * 2 + 1, self.entities_range_vision * 2 + 1)),
+            'pheromone': Box(low=0, high=numpy.inf, shape=(self.pheromones_range_vision * 2 + 1, self.pheromones_range_vision * 2 + 1, self.number_pheromone_layers)),
+        })
+        self.action_space: Space = gymnasium.spaces.Dict({
+            'basic': Discrete(len(BasicActions)),
+            'pheromone': Box(low=0, high=1, shape=(self.number_pheromone_layers,)),
+        })
+
         self.maximum_quantity_pheromone_deposited: float = ant_agent_configuration['maximum_quantity_pheromone_deposited_agent']
         self._current_reward: float = 0
         self._current_observation: Space = None
@@ -30,7 +41,7 @@ class AntAgent(Entity):
         self._number_foods_collected_timestep: int = 0
 
         self.total_number_foods_collected: int = 0
-        self.total_pheromones_deposited: numpy.ndarray = numpy.zeros(shape=(number_pheromone_layers,))
+        self.total_pheromones_deposited: numpy.ndarray = numpy.zeros(shape=(self.number_pheromone_layers,))
 
     def compute_observation(self) -> Space:
         entity_observation = self._environment.get_entity_observation(self)

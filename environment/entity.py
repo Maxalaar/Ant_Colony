@@ -1,6 +1,13 @@
+from enum import Enum
+
 from ray.rllib import MultiAgentEnv
 
-from environment.environment_global_include import EntityType
+
+class EntityType(Enum):
+    NIL = -1
+    VOID = 0
+    ANT_AGENT = 1
+    FOOD = 2
 
 
 class Entity:

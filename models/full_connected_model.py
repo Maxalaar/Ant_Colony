@@ -1,12 +1,10 @@
-import gym
 import numpy
 
+import gymnasium
 from gymnasium import Space
 
 from ray.rllib.models.torch.torch_modelv2 import TorchModelV2
 from ray.rllib.utils.framework import try_import_torch
-
-from environment.ant_agent import AntAgent
 
 torch, nn = try_import_torch()
 
@@ -17,8 +15,8 @@ class FullConnectedModel(TorchModelV2, nn.Module):
         nn.Module.__init__(self)
 
         self.model_configuration: dict = customized_model_kwargs
-        self.observation_space: Space = AntAgent.observation_space
-        self.action_space: Space = AntAgent.action_space
+        self.observation_space: Space = observation_space
+        self.action_space: Space = action_space
         self.number_full_connected_layers: int = self.model_configuration['number_full_connected_layers']
         self.size_full_connected_layers: int = self.model_configuration['size_full_connected_layers']
 
@@ -51,9 +49,9 @@ class FullConnectedModel(TorchModelV2, nn.Module):
         self.dictionary_actions_layers: dict = {}
         self.list_actions_layers: nn.modules.container.ModuleList = nn.ModuleList()
         for sub_action_key in action_space.keys():
-            if type(self.action_space[sub_action_key]) == gym.spaces.Discrete:
+            if type(self.action_space[sub_action_key]) == gymnasium.spaces.Discrete:
                 sub_action_size = self.action_space[sub_action_key].n
-            elif type(self.action_space[sub_action_key]) == gym.spaces.Box:
+            elif type(self.action_space[sub_action_key]) == gymnasium.spaces.Box:
                 sub_action_size = 2
                 for dimension in range(len(self.action_space[sub_action_key].shape)):
                     sub_action_size *= self.action_space[sub_action_key].shape[dimension]

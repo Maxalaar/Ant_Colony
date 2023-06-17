@@ -1,7 +1,6 @@
 from ray.rllib import MultiAgentEnv
 
-from environment.environment_global_include import EntityType
-from environment.entity import Entity
+from environment.entity import Entity, EntityType
 from environment.ant_agent import AntAgent
 
 

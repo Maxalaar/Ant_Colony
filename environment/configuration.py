@@ -6,6 +6,9 @@ ant_colony_environment_basic_configuration: dict = {
     'maximum_pheromone_cell': 1,
     'pheromone_evaporation': 0.05,
     'ant_agent_configuration': {
+        'entities_range_vision': 2,
+        'pheromones_range_vision': 2,
+        'number_pheromone_layers': 3,
         'maximum_quantity_pheromone_deposited_agent': 0.5,
     },
     'graphic_interface_configuration': {
@@ -30,9 +33,5 @@ ant_colony_environment_epic_configuration: dict = dict(ant_colony_environment_ba
       'max_step': 300,
       'number_agents': 15,
       'number_foods': 10,
-      'pheromone_evaporation': 0.05,
-      'ant_agent_configuration': {
-          'maximum_quantity_pheromone_deposited_agent': 3,
-      },
   }
 )
