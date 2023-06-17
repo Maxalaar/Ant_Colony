@@ -21,7 +21,7 @@ class AntAgent(Entity):
     })
 
     def __init__(self, environment: MultiAgentEnv, ant_agent_configuration: Dict[str, str], number: int):
-        super().__init__(id='ant_agent_' + str(number), environment=environment, type=EntityType.ANT_AGENT)
+        super().__init__(id='ant_agent_' + str(number), environment=environment, type=EntityType.ANT_AGENT, can_stacked=False)
         self.range_vision: int = ant_range_vision
         self.maximum_quantity_pheromone_deposited: float = ant_agent_configuration['maximum_quantity_pheromone_deposited_agent']
         self._current_reward: float = 0

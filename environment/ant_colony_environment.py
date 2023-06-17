@@ -27,8 +27,8 @@ class AntColonyEnvironment(MultiAgentEnv):
         self.render_environment: bool = environment_configuration['graphic_interface_configuration']['render_environment']
         self.graphic_interface_configuration: Dict = environment_configuration['graphic_interface_configuration']
         self.graphic_interface: GraphicInterface = None
-        self.map: List[List[List[Entity]]] = None
-        self.pheromone_layers: numpy.ndarray = None
+        self.entity_map: List[List[List[Entity]]] = None
+        self.pheromone_map: numpy.ndarray = None
 
         self._spaces_in_preferred_format: bool = True
         self._obs_space_in_preferred_format: bool = True
@@ -79,7 +79,7 @@ class AntColonyEnvironment(MultiAgentEnv):
         self.clear_information_dictionaries()
         self.current_step += 1
 
-        self.pheromone_layers *= (1 - self.pheromone_evaporation)
+        self.pheromone_map *= (1 - self.pheromone_evaporation)
 
         for agent_id, action in action_dictionary.items():
             self.agents_dictionary[agent_id].compute_action(action)
@@ -152,13 +152,13 @@ class AntColonyEnvironment(MultiAgentEnv):
         self.add_entity_map(resource, self.get_random_map_position())
 
     def create_map(self):
-        self.map = [[[] for i in range(self.map_size[0])] for j in range(self.map_size[1])]
+        self.entity_map = [[[] for i in range(self.map_size[0])] for j in range(self.map_size[1])]
 
     def create_pheromone_layers(self):
-        self.pheromone_layers = numpy.zeros((self.map_size[0], self.map_size[1], self.number_pheromone_layers))
+        self.pheromone_map = numpy.zeros((self.map_size[0], self.map_size[1], self.number_pheromone_layers))
 
     def add_entity_map(self, entity: Entity, position: Tuple[int, int]):
-        self.map[position[0]][position[1]].append(entity)
+        self.entity_map[position[0]][position[1]].append(entity)
         self.entities_position_dictionary[entity] = position
 
     def get_random_map_position(self) -> Tuple[int, int]:
@@ -172,8 +172,8 @@ class AntColonyEnvironment(MultiAgentEnv):
     def reposition_entity(self, entity: Entity, new_entity_position: Tuple[int, int]):
         if self.position_is_on_map(new_entity_position):
             entity_position = self.get_entity_position(entity)
-            self.map[entity_position[0]][entity_position[1]].remove(entity)
-            self.map[new_entity_position[0]][new_entity_position[1]].append(entity)
+            self.entity_map[entity_position[0]][entity_position[1]].remove(entity)
+            self.entity_map[new_entity_position[0]][new_entity_position[1]].append(entity)
             self.entities_position_dictionary[entity] = new_entity_position
         else:
             raise TypeError('Attempt to reposition an entity outside the map')
@@ -194,7 +194,7 @@ class AntColonyEnvironment(MultiAgentEnv):
                 value_observation_cell: EntityType = None
 
                 if self.position_is_on_map(observation_cell):
-                    cell_map: List[Entity] = self.map[observation_cell[0]][observation_cell[1]]
+                    cell_map: List[Entity] = self.entity_map[observation_cell[0]][observation_cell[1]]
                     if len(cell_map) > 0:
                         value_observation_cell = cell_map[0].type
                     else:
@@ -219,7 +219,7 @@ class AntColonyEnvironment(MultiAgentEnv):
             for j in range(-range_vision, range_vision):
                 observation_cell = (ant_position[0] + i, ant_position[1] + j)
                 if self.position_is_on_map(observation_cell):
-                    observation[i][j] = self.pheromone_layers[observation_cell[0]][observation_cell[1]]
+                    observation[i][j] = self.pheromone_map[observation_cell[0]][observation_cell[1]]
                 else:
                     observation[i][j] = nil_vector
 
@@ -227,7 +227,7 @@ class AntColonyEnvironment(MultiAgentEnv):
 
     def collect_action(self, ant_agent: AntAgent):
         agent_position: Tuple[int, int] = self.entities_position_dictionary[ant_agent]
-        for entity in self.map[agent_position[0]][agent_position[1]]:
+        for entity in self.entity_map[agent_position[0]][agent_position[1]]:
             if entity.type == EntityType.FOOD:
                 entity: Food = entity
                 entity.is_collected(ant_agent)
@@ -245,9 +245,18 @@ class AntColonyEnvironment(MultiAgentEnv):
         if move == BasicActions.MOVE_LEFT:
             new_entity_position = (entity_position[0] - 1, entity_position[1])
 
-        if self.position_is_on_map(new_entity_position):
+        if self.position_is_on_map(new_entity_position) and self.cell_is_stackable(new_entity_position):
             self.reposition_entity(entity, new_entity_position)
+
+    def cell_is_stackable(self, position: Tuple[int, int]) -> bool:
+        if self.position_is_on_map(position):
+            for entity in self.entity_map[position[0]][position[1]]:
+                if not entity.can_stacked:
+                    return False
+            return True
+        else:
+            raise TypeError('Attempt to check if one cell is stackable outside the map')
 
     def apply_pheromones(self, entity: Entity, pheromone_vector: numpy.ndarray):
         entity_position: Tuple[int, int] = self.get_entity_position(entity)
-        self.pheromone_layers[entity_position[0]][entity_position[1]] += pheromone_vector
+        self.pheromone_map[entity_position[0]][entity_position[1]] += pheromone_vector

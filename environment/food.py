@@ -7,7 +7,7 @@ from environment.ant_agent import AntAgent
 
 class Food(Entity):
     def __init__(self, environment: MultiAgentEnv, number: int):
-        super().__init__(id='food_' + str(number), environment=environment, type=EntityType.FOOD)
+        super().__init__(id='food_' + str(number), environment=environment, type=EntityType.FOOD, can_stacked=True)
 
     def is_collected(self, ant_agent: AntAgent):
         ant_agent.collect_food(1)

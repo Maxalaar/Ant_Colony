@@ -22,9 +22,13 @@ class FullConnectedModel(TorchModelV2, nn.Module):
         self.number_full_connected_layers: int = self.model_configuration['number_full_connected_layers']
         self.size_full_connected_layers: int = self.model_configuration['size_full_connected_layers']
 
+        # self.activation_function = nn.Identity()
+        self.activation_function = nn.LeakyReLU()
+        # self.activation_function = nn.ReLU()
+        self.flattener = nn.Flatten()
+
         self.observation: numpy.ndarray = None
         self.flatten_observation: numpy.ndarray = None
-        self.flattener = nn.Flatten()
         self.full_connected_activation = None
 
         # We calculate the size of the flatten observation
@@ -68,9 +72,9 @@ class FullConnectedModel(TorchModelV2, nn.Module):
         self.flatten_observation = torch.cat((entity_flatten_observation, pheromone_flatten_observation), 1)
 
         flatten_observation_projection = self.projection_flatten_fully(self.flatten_observation)
-        self.full_connected_activation = self.list_full_connected_layers[0](flatten_observation_projection)
+        self.full_connected_activation = self.activation_function(self.list_full_connected_layers[0](flatten_observation_projection))
         for i in range(1, len(self.list_full_connected_layers)):
-            self.full_connected_activation = self.list_full_connected_layers[i](self.full_connected_activation)
+            self.full_connected_activation = self.activation_function(self.list_full_connected_layers[i](self.full_connected_activation))
 
         basic_action = self.dictionary_actions_layers['basic'](self.full_connected_activation)
         pheromone_action = self.dictionary_actions_layers['pheromone'](self.full_connected_activation)

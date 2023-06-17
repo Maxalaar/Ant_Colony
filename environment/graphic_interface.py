@@ -53,8 +53,8 @@ class GraphicInterface:
     def display_entities(self):
         for x in range(self._environment.map_size[0]):
             for y in range(self._environment.map_size[1]):
-                if len(self._environment.map[x][y]) > 0:
-                    entity: Entity = self._environment.map[x][y][0]
+                if len(self._environment.entity_map[x][y]) > 0:
+                    entity: Entity = self._environment.entity_map[x][y][0]
                     entity_position = self.index_to_position((x, y))
                     if entity.type == EntityType.ANT_AGENT:
                         self.draw_rect(size=self._cell_size, position=entity_position, color=self._ant_agent_color)
@@ -81,7 +81,7 @@ class GraphicInterface:
         return index[0] * self._cell_size[0], index[1] * self._cell_size[1]
 
     def update_pheromone_layers(self):
-        pheromones_average = np.average(self._environment.pheromone_layers, axis=2)
+        pheromones_average = np.average(self._environment.pheromone_map, axis=2)
         pheromones_average = np.rot90(pheromones_average)
         pheromones_average = np.flip(pheromones_average, 0)
 

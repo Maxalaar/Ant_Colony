@@ -11,7 +11,7 @@ ant_colony_environment_basic_configuration: dict = {
     'graphic_interface_configuration': {
         'render_environment': False,
         'window_size': (800, 800),
-        'steps_per_second': 5,
+        'steps_per_second': 8,
     },
 }
 

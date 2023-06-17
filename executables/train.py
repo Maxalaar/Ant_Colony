@@ -31,8 +31,8 @@ ppo_configuration: AlgorithmConfig = (
         num_envs_per_worker=1,
     )
     .evaluation(
-        evaluation_interval=10,
-        evaluation_duration=4,
+        evaluation_interval=100,
+        evaluation_duration=10,
         evaluation_num_workers=1,
         evaluation_config={'render_env': False, },
     )
@@ -57,7 +57,7 @@ if __name__ == '__main__':
             stop={
                 # 'episode_reward_mean': 5,
                 # 'timesteps_total': 1000000,
-                'time_total_s': 60 * 60 * 3,
+                'time_total_s': 60 * 60 * 5,
             },
             checkpoint_config=air.CheckpointConfig(
                 num_to_keep=3,
