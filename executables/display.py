@@ -9,7 +9,7 @@ if __name__ == '__main__':
         ray.init(local_mode=True)
 
     # path_checkpoint: str = ''
-    path_checkpoint: str = '/mnt/5fdcbd7a-f9bb-4644-9e14-f139b450c359/Informatique_Workplace/Workplace_PyCharm/Ant_Colony/ray_result/trash/PPO_AntColonyEnvironment_864b3_00000_0_2023-06-17_14-14-35/checkpoint_000063'
+    path_checkpoint: str = '/mnt/5fdcbd7a-f9bb-4644-9e14-f139b450c359/Informatique_Workplace/Workplace_PyCharm/Ant_Colony/ray_result/trash/PPO_AntColonyEnvironment_fc0e0_00000_0_2023-06-18_22-01-59/checkpoint_000889'
     algorithm: Algorithm = Algorithm.from_checkpoint(path_checkpoint)
     algorithm_config: AlgorithmConfig = Algorithm.get_config(algorithm).copy(copy_frozen=False)
 

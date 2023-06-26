@@ -36,15 +36,16 @@ if __name__ == "__main__":
         'ray/tune/evaluation/episode_reward_mean',
         'ray/tune/evaluation/episode_len_mean',
         'ray/tune/episode_reward_mean',
+        'ray/tune/custom_metrics/foods_collected_in_episode_mean',
         'ray/tune/evaluation/custom_metrics/foods_collected_in_episode_mean',
         'ray/tune/evaluation/custom_metrics/average_foods_collected_per_agents_in_episode_mean',
         'ray/tune/evaluation/custom_metrics/average_pheromones_deposited_per_agent_in_episode_mean',
     ]
 
     list_simulation = [
-        'ray/tune/evaluation/sampler_perf/mean_env_render_ms',
-        'ray/tune/evaluation/sampler_perf/mean_action_processing_ms',
-        'ray/tune/evaluation/sampler_perf/mean_inference_ms',
+        'ray/tune/sampler_perf/mean_env_render_ms',
+        'ray/tune/sampler_perf/mean_action_processing_ms',
+        'ray/tune/sampler_perf/mean_inference_ms',
         'ray/tune/perf/cpu_util_percent',
         'ray/tune/perf/gpu_util_percent0',
         'ray/tune/perf/ram_util_percent',

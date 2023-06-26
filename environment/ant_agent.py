@@ -52,9 +52,16 @@ class AntAgent(Entity):
         }
         return self._current_observation
 
-    def compute_reward(self) -> float:
-        self._current_reward = self._number_foods_collected_timestep
+    def timestep_update(self):
         self._number_foods_collected_timestep = 0
+
+    def add_global_reward(self) -> float:
+        return self._number_foods_collected_timestep
+        # return 0
+
+    def compute_local_reward(self) -> float:
+        self._current_reward = 0
+        # self._current_reward = self._number_foods_collected_timestep
         return self._current_reward
 
     def compute_is_done(self) -> bool:

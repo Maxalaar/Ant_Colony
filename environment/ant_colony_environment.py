@@ -29,10 +29,12 @@ class AntColonyEnvironment(MultiAgentEnv):
         self.number_agents: int = environment_configuration['number_agents']
         self.number_foods: int = environment_configuration['number_foods']
         self.ant_agent_configuration = environment_configuration['ant_agent_configuration']
-        self.number_pheromone_layers: int = environment_configuration['ant_agent_configuration']['number_pheromone_layers']
+        self.number_pheromone_layers: int = environment_configuration['ant_agent_configuration'][
+            'number_pheromone_layers']
         self.pheromone_evaporation: float = environment_configuration['pheromone_evaporation']
         self.max_step: int = environment_configuration['max_step']
-        self.render_environment: bool = environment_configuration['graphic_interface_configuration']['render_environment']
+        self.render_environment: bool = environment_configuration['graphic_interface_configuration'][
+            'render_environment']
         self.graphic_interface_configuration: Dict = environment_configuration['graphic_interface_configuration']
         self.graphic_interface: GraphicInterface = None
         self.entity_map: List[List[List[Entity]]] = None
@@ -43,6 +45,8 @@ class AntColonyEnvironment(MultiAgentEnv):
         self._action_space_in_preferred_format: bool = True
 
         self.current_step: int = None
+        self.global_reward: float = None
+        self.global_reward_next_step: float = None
         self.next_agent_number_id: int = None
         self.next_food_number_id: int = None
         self.agent_ids: set = None
@@ -63,6 +67,8 @@ class AntColonyEnvironment(MultiAgentEnv):
         self.observation_space: gym.spaces.Dict() = {}
 
         self.current_step = 0
+        self.global_reward = 0
+        self.global_reward_next_step = 0
         self.next_agent_number_id = 0
         self.next_food_number_id = 0
         self.agent_ids = set()
@@ -85,15 +91,18 @@ class AntColonyEnvironment(MultiAgentEnv):
     def step(self, action_dictionary: Dict) -> Tuple[
         Dict[str, Space], Dict[str, float], Dict[str, bool], Dict[str, bool], Dict[str, Dict[str, str]]]:
         self.clear_information_dictionaries()
+        self.global_reward = self.global_reward_next_step
+        self.global_reward_next_step = 0
         self.current_step += 1
 
         self.pheromone_map *= (1 - self.pheromone_evaporation)
 
         for agent_id, action in action_dictionary.items():
-            self.agents_dictionary[agent_id].compute_action(action)
-
-        for agent_id, _ in action_dictionary.items():
+            ant_agent: AntAgent = self.agents_dictionary[agent_id]
+            ant_agent.timestep_update()
+            ant_agent.compute_action(action)
             self.update_information_dictionaries(agent_id)
+            self.global_reward_next_step += ant_agent.add_global_reward()
 
         self.compute_simulation_is_done()
         self.compute_simulation_is_truncated()
@@ -119,7 +128,7 @@ class AntColonyEnvironment(MultiAgentEnv):
     def update_information_dictionaries(self, agent_id: str):
         agent: AntAgent = self.agents_dictionary[agent_id]
         self.observations_dictionary[agent.id] = agent.compute_observation()
-        self.rewards_dictionary[agent.id] = agent.compute_reward()
+        self.rewards_dictionary[agent.id] = agent.compute_local_reward() + self.global_reward
         self.is_done_dictionary[agent.id] = agent.compute_is_done()
         self.is_truncated_dictionary[agent_id] = agent.compute_is_truncated()
         self.agents_information_dictionary[agent.id] = agent.compute_agent_information()
@@ -218,7 +227,9 @@ class AntColonyEnvironment(MultiAgentEnv):
         return observation
 
     def get_pheromone_observation(self, ant_agent: AntAgent) -> numpy.ndarray:
-        observation = numpy.zeros(shape=(ant_agent.observation_space['entity'].shape[0], ant_agent.observation_space['entity'].shape[1], self.number_pheromone_layers))
+        observation = numpy.zeros(shape=(
+        ant_agent.observation_space['entity'].shape[0], ant_agent.observation_space['entity'].shape[1],
+        self.number_pheromone_layers))
         range_vision = ant_agent.pheromones_range_vision
         ant_position = self.get_entity_position(ant_agent)
         nil_vector = numpy.ones(shape=(self.number_pheromone_layers,)) * 0
