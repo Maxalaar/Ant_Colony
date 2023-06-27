@@ -2,9 +2,8 @@ import random
 from typing import Dict, Tuple, List, Optional
 import numpy
 
-import gym
 from ray.rllib import MultiAgentEnv
-from gym import Space
+from gymnasium import Space
 
 from environment.entity import Entity, EntityType
 from environment.ant_agent import AntAgent, BasicActions

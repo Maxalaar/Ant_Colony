@@ -87,7 +87,7 @@ class GraphicInterface:
         if self._pheromones_average_figure is None:
             plt.ion()
             self._pheromones_average_figure = plt.figure()
-            self._pheromones_average_figure.canvas.set_window_title('Pheromone Map')
+            self._pheromones_average_figure.suptitle('Pheromone Map')
             self._pheromones_average_axis = self._pheromones_average_figure.add_subplot(111)
             self._pheromones_average_image = self._pheromones_average_axis.imshow(pheromones_average)
 

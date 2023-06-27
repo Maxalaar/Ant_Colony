@@ -1,9 +1,7 @@
 import random
 from typing import Dict
 
-import gymnasium
-from gym import Space
-
+from gymnasium import Space
 from ray.rllib.policy.policy import PolicySpec
 
 from environment.ant_colony_environment import AntColonyEnvironment

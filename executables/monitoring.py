@@ -40,6 +40,7 @@ if __name__ == "__main__":
         'ray/tune/evaluation/custom_metrics/foods_collected_in_episode_mean',
         'ray/tune/evaluation/custom_metrics/average_foods_collected_per_agents_in_episode_mean',
         'ray/tune/evaluation/custom_metrics/average_pheromones_deposited_per_agent_in_episode_mean',
+        'ray/tune/info/learner/policy0/learner_stats/vf_explained_var',
     ]
 
     list_simulation = [
