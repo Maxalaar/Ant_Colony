@@ -6,6 +6,7 @@ from ray.rllib.policy.policy import PolicySpec
 
 from environment.ant_colony_environment import AntColonyEnvironment
 from models.full_connected_model import FullConnectedModel
+from models.centralized_critic_model import TorchCentralizedCriticModel
 from models.configuration import *
 
 
@@ -14,11 +15,9 @@ def policies_dictionary(environment_configuration: Dict):
     action_space: Space = AntColonyEnvironment.compute_ant_agent_action_space(environment_configuration)
     configuration = {
         'model': {
-            # 'custom_model': 'minimal_model',
-            # 'custom_model': 'full_connected_model',
-            # 'custom_model': 'minimal_lstm_model',
-            'custom_model': FullConnectedModel,
-            'custom_model_config': full_connected_model_basic_configuration,
+            # 'custom_model': FullConnectedModel,
+            'custom_model': TorchCentralizedCriticModel,
+            # 'custom_model_config': full_connected_model_basic_configuration,
         },
     }
     dictionary = {
