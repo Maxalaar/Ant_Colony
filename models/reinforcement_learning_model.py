@@ -15,7 +15,7 @@ class ReinforcementLearningModel(ABC, TorchModelV2, nn.Module):
     def __init__(self, observation_space, action_space, number_outputs, model_configuration, name, **customized_model_kwargs):
         TorchModelV2.__init__(self, observation_space, action_space, number_outputs, model_configuration, name)
         nn.Module.__init__(self)
-        self.model_configuration: dict = customized_model_kwargs
+        self.model_configuration: Dict[str:str] = customized_model_kwargs
 
         self.observation_space: gymnasium.spaces.Dict = observation_space
         self.action_space: gymnasium.spaces.Dict = action_space
@@ -24,6 +24,7 @@ class ReinforcementLearningModel(ABC, TorchModelV2, nn.Module):
         self.keys_action_space: List = self.action_space.keys()
         self.flatten_observation_size: int = self.compute_flatten_observation_size()
         self.flatten_action_size: int = self.compute_flatten_action_size()
+        self.flatten_action_size_in_batch: int = self.compute_flatten_action_size_in_batch()
         self.list_actions_layers: nn.modules.container.ModuleList = None
         self.dictionary_actions_layers: Dict = None
         self.observation: numpy.ndarray = None
@@ -48,6 +49,22 @@ class ReinforcementLearningModel(ABC, TorchModelV2, nn.Module):
                 sub_action_size = self.action_space[sub_action_key].n
             elif type(self.action_space[sub_action_key]) == gymnasium.spaces.Box:
                 sub_action_size = 2
+                for dimension in range(len(self.action_space[sub_action_key].shape)):
+                    sub_action_size *= self.action_space[sub_action_key].shape[dimension]
+            else:
+                raise TypeError('The type of the sub action space is not taken into account.')
+
+            flatten_action_size += sub_action_size
+
+        return flatten_action_size
+
+    def compute_flatten_action_size_in_batch(self) -> int:
+        flatten_action_size = 0
+        for sub_action_key in self.action_space.keys():
+            if type(self.action_space[sub_action_key]) == gymnasium.spaces.Discrete:
+                sub_action_size = 1
+            elif type(self.action_space[sub_action_key]) == gymnasium.spaces.Box:
+                sub_action_size = 1
                 for dimension in range(len(self.action_space[sub_action_key].shape)):
                     sub_action_size *= self.action_space[sub_action_key].shape[dimension]
             else:

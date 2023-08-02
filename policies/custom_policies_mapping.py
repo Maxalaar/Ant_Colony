@@ -13,11 +13,18 @@ from models.configuration import *
 def policies_dictionary(environment_configuration: Dict):
     observation_space: Space = AntColonyEnvironment.compute_ant_agent_observation_space(environment_configuration)
     action_space: Space = AntColonyEnvironment.compute_ant_agent_action_space(environment_configuration)
+
+    if not environment_configuration['ant_agent_configuration']['use_global_reward']:
+        model = FullConnectedModel
+        custom_model_config = full_connected_model_basic_configuration
+    else:
+        model = TorchCentralizedCriticModel
+        custom_model_config = {}
+
     configuration = {
         'model': {
-            # 'custom_model': FullConnectedModel,
-            'custom_model': TorchCentralizedCriticModel,
-            # 'custom_model_config': full_connected_model_basic_configuration,
+            'custom_model': model,
+            'custom_model_config': custom_model_config,
         },
     }
     dictionary = {

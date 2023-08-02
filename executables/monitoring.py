@@ -56,8 +56,8 @@ if __name__ == "__main__":
     process.start()
     time.sleep(5)
 
-    # Monitoring of learning
-    webbrowser.open(list_to_url(list_learning))
-
     # Monitoring simulation
     webbrowser.open(list_to_url(list_simulation))
+
+    # Monitoring of learning
+    webbrowser.open(list_to_url(list_learning))

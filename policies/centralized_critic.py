@@ -49,9 +49,6 @@ def centralized_critic_postprocessing(policy, sample_batch, other_agent_batches=
         for key in other_agent_batches.keys():
             agent_id_batch['other_agent_' + str(i)] = other_agent_batches[key][index_batche]
             other_agents_observation['other_agent_' + str(i)] = other_agent_batches[key][index_batche][SampleBatch.CUR_OBS]
-            # if not(SampleBatch.ACTIONS in other_agent_batches[key][index_batche].keys()):
-            #     print('oki')
-            #     pass
             other_agents_action['other_agent_' + str(i)] = other_agent_batches[key][index_batche][SampleBatch.ACTIONS]
             i += 1
 

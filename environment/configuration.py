@@ -5,12 +5,15 @@ ant_colony_environment_basic_configuration: dict = {
     'max_step': 15,
     'maximum_pheromone_cell': 1,
     'pheromone_evaporation': 0.05,
+
     'ant_agent_configuration': {
         'entities_range_vision': 2,
         'pheromones_range_vision': 2,
         'number_pheromone_layers': 3,
         'maximum_quantity_pheromone_deposited_agent': 0.5,
+        'use_global_reward': True,
     },
+
     'graphic_interface_configuration': {
         'render_environment': False,
         'window_size': (800, 800),

@@ -24,6 +24,7 @@ class AntAgent(Entity):
         self.entities_range_vision: int = ant_agent_configuration['entities_range_vision']
         self.pheromones_range_vision: int = ant_agent_configuration['pheromones_range_vision']
         self.number_pheromone_layers: int = ant_agent_configuration['number_pheromone_layers']
+        self._use_global_reward: bool = ant_agent_configuration['use_global_reward']
 
         self.observation_space: Space = gymnasium.spaces.Dict({
             'entity': Box(low=-len(EntityType), high=len(EntityType), shape=(self.entities_range_vision * 2 + 1, self.entities_range_vision * 2 + 1)),
@@ -35,7 +36,6 @@ class AntAgent(Entity):
         })
 
         self.maximum_quantity_pheromone_deposited: float = ant_agent_configuration['maximum_quantity_pheromone_deposited_agent']
-        self._current_reward: float = 0
         self._current_observation: Space = None
         self._is_done: bool = False
         self._number_foods_collected_timestep: int = 0
@@ -56,13 +56,16 @@ class AntAgent(Entity):
         self._number_foods_collected_timestep = 0
 
     def add_global_reward(self) -> float:
-        # return self._number_foods_collected_timestep
-        return 0
+        if self._use_global_reward:
+            return self._number_foods_collected_timestep
+        else:
+            return 0
 
     def compute_local_reward(self) -> float:
-        # self._current_reward = 0
-        self._current_reward = self._number_foods_collected_timestep
-        return self._current_reward
+        if not self._use_global_reward:
+            return self._number_foods_collected_timestep
+        else:
+            return 0
 
     def compute_is_done(self) -> bool:
         self._is_done = False
