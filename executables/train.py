@@ -68,11 +68,11 @@ if __name__ == '__main__':
         run_config=air.RunConfig(
             name=training_name_creator(algorithm_configuration),
             storage_path='../ray_result/',
-            stop={
-                # 'episode_reward_mean': 5,
-                # 'timesteps_total': 1000000,
-                'time_total_s': 60 * 60 * 24,
-            },
+            # stop={
+            #     # 'episode_reward_mean': 5,
+            #     # 'timesteps_total': 1000000,
+            #     'time_total_s': 60 * 60 * 24,
+            # },
             checkpoint_config=air.CheckpointConfig(
                 num_to_keep=3,
                 checkpoint_score_attribute='episode_reward_mean',

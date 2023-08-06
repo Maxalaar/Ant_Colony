@@ -8,8 +8,7 @@ if __name__ == '__main__':
     if not ray.is_initialized():
         ray.init(local_mode=True)
 
-    # path_checkpoint: str = '/mnt/5fdcbd7a-f9bb-4644-9e14-f139b450c359/Informatique_Workplace/Workplace_PyCharm/Ant_Colony/ray_result/2023-06-17_00h-16m-45s_complex_5agents_25x25_5foods_120steps_PPOConfig/PPO_AntColonyEnvironment_7b02b_00000_0_2023-06-17_00-16-45/checkpoint_000870'
-    path_checkpoint: str = '/mnt/5fdcbd7a-f9bb-4644-9e14-f139b450c359/Informatique_Workplace/Workplace_PyCharm/Ant_Colony/ray_result/trash/CentralizedCritic_AntColonyEnvironment_b20b2_00000_0_2023-07-04_01-02-33/checkpoint_000300'
+    path_checkpoint: str = '/mnt/5fdcbd7a-f9bb-4644-9e14-f139b450c359/Informatique_Workplace/Workplace_PyCharm/Ant_Colony/ray_result/2023-08-02_09h-44m-02s_Model:TorchCentralizedCriticModel_GlobalReward:True_NumberAgents:5_MapSize:(25, 25)/CentralizedCritic_AntColonyEnvironment_59633_00000_0_2023-08-02_09-44-02/checkpoint_000944'
     algorithm: Algorithm = Algorithm.from_checkpoint(path_checkpoint)
     algorithm_config: AlgorithmConfig = Algorithm.get_config(algorithm).copy(copy_frozen=False)
 
@@ -26,7 +25,7 @@ if __name__ == '__main__':
     #     env=AntColonyEnvironment,
     #     env_config=ant_colony_environment_epic_configuration,
     # )
-    # algorithm_config.env_config['graphic_interface_configuration']['render_environment'] = True
+    algorithm_config.env_config['graphic_interface_configuration']['render_environment'] = True
 
     algorithm: Algorithm = algorithm_config.build()
     algorithm.restore(path_checkpoint)
