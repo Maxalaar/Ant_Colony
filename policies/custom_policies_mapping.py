@@ -5,6 +5,7 @@ from gymnasium import Space
 from ray.rllib.policy.policy import PolicySpec
 
 from environment.ant_colony_environment import AntColonyEnvironment
+from models.centralized_critic_full_connected_model import TorchCentralizedCriticFullConnectedModel
 from models.full_connected_model import FullConnectedModel
 from models.centralized_critic_model import TorchCentralizedCriticModel
 from models.configuration import *
@@ -18,7 +19,8 @@ def policies_dictionary(environment_configuration: Dict):
         model = FullConnectedModel
         custom_model_config = full_connected_model_basic_configuration
     else:
-        model = TorchCentralizedCriticModel
+        # model = TorchCentralizedCriticModel
+        model = TorchCentralizedCriticFullConnectedModel
         custom_model_config = {}
 
     configuration = {
