@@ -30,11 +30,11 @@ ppo_configuration.resources(
     num_gpus_per_learner_worker=0,
 )
 ppo_configuration.rollouts(
-    num_rollout_workers=2,
+    num_rollout_workers=1,
     num_envs_per_worker=1,
 )
 ppo_configuration.evaluation(
-    evaluation_num_workers=1,
+    evaluation_num_workers=0,
     evaluation_interval=20,
     evaluation_duration=100,
     evaluation_config={'render_env': False, },
@@ -51,7 +51,7 @@ ppo_configuration.experimental(
 if __name__ == '__main__':
     if ray.is_initialized():
         ray.shutdown()
-    ray.init(local_mode=False)
+    ray.init(local_mode=False, num_cpus=4, num_gpus=0)
 
     algorithm_configuration: AlgorithmConfig = ppo_configuration
 
