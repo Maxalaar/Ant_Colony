@@ -19,13 +19,14 @@ ppo_configuration.environment(
     disable_env_checking=True,
     render_env=False,
 )
-ppo_configuration.multi_agent(policies=policies_dictionary(ppo_configuration.env_config), policy_mapping_fn=select_fix_policy)
+ppo_configuration.multi_agent(policies=policies_dictionary(ppo_configuration.env_config),
+                              policy_mapping_fn=select_fix_policy)
 ppo_configuration.callbacks(callbacks_class=CustomCallbacks)
 ppo_configuration.resources(
     num_gpus=0,
     num_cpus_per_worker=1,
     num_gpus_per_worker=0,
-    num_learner_workers=0,
+    num_learner_workers=1,
     num_cpus_per_learner_worker=0,
     num_gpus_per_learner_worker=0,
 )
@@ -51,7 +52,7 @@ ppo_configuration.experimental(
 if __name__ == '__main__':
     if ray.is_initialized():
         ray.shutdown()
-    ray.init(local_mode=False, num_cpus=4, num_gpus=0)
+    ray.init(local_mode=False)  # num_cpus=6, num_gpus=0
 
     algorithm_configuration: AlgorithmConfig = ppo_configuration
 
@@ -66,7 +67,7 @@ if __name__ == '__main__':
         trainable=trainable,
         param_space=algorithm_configuration,
         run_config=air.RunConfig(
-            name=training_name_creator(algorithm_configuration),
+            name=training_name_creator(algorithm_configuration, False),
             storage_path='../ray_result/',
             # stop={
             #     # 'episode_reward_mean': 5,

@@ -3,7 +3,10 @@ from datetime import datetime
 from ray.rllib.algorithms.algorithm import AlgorithmConfig
 
 
-def training_name_creator(algorithm_configuration: AlgorithmConfig) -> str:
+def training_name_creator(algorithm_configuration: AlgorithmConfig, is_trash: bool = False) -> str:
+    if is_trash:
+        return 'trash'
+
     separator: str = '_'
     name: str = ''
     name += datetime.today().strftime('%Y-%m-%d_%Hh-%Mm-%Ss') + separator
